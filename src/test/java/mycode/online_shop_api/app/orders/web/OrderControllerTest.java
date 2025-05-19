@@ -53,14 +53,14 @@ class OrderControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("POST /order/sendOrder - should return 201 CREATED")
+    @DisplayName("POST /api/v1/order/sendOrder - should return 201 CREATED")
     void createOrder() throws Exception {
         CreateOrderRequest request = new CreateOrderRequest(LocalDate.now(), List.of());
         OrderResponse response = new OrderResponse(1, "test@example.com", "Shipping Address", "Order Address", LocalDate.now(), 100.0, "Pending", null);
 
         when(orderCommandService.addOrder(any())).thenReturn(response);
 
-        mockMvc.perform(post("/order/sendOrder")
+        mockMvc.perform(post("/api/v1/order/sendOrder")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -69,40 +69,40 @@ class OrderControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("PUT /order/cancelOrder/{orderId} - should return 202 ACCEPTED")
+    @DisplayName("PUT /api/v1/order/cancelOrder/{orderId} - should return 202 ACCEPTED")
     void cancelOrder() throws Exception {
         OrderResponse response = new OrderResponse(1, "test@example.com", "Shipping Address", "Order Address", LocalDate.now(), 100.0, "Cancelled", null);
 
         when(orderCommandService.cancelOrder(1)).thenReturn(response);
 
-        mockMvc.perform(put("/order/cancelOrder/1"))
+        mockMvc.perform(put("/api/v1/order/cancelOrder/1"))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.orderStatus").value("Cancelled"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("DELETE /order/deleteOrder/{orderId} - should return 202 ACCEPTED")
+    @DisplayName("DELETE /api/v1/order/deleteOrder/{orderId} - should return 202 ACCEPTED")
     void deleteOrder() throws Exception {
         OrderResponse response = new OrderResponse(1, "test@example.com", "Shipping Address", "Order Address", LocalDate.now(), 100.0, "Deleted", null);
 
         when(orderCommandService.deleteOrder(1)).thenReturn(response);
 
-        mockMvc.perform(delete("/order/deleteOrder/1"))
+        mockMvc.perform(delete("/api/v1/order/deleteOrder/1"))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.orderStatus").value("Deleted"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("PUT /order/updateOrder/{orderId} - should update an order")
+    @DisplayName("PUT /api/v1/order/updateOrder/{orderId} - should update an order")
     void updateOrder() throws Exception {
         CreateOrderUpdateRequest request = new CreateOrderUpdateRequest("test@example.com", "Shipping Address", "Order Address", 100.0, "Shipped");
         OrderResponse response = new OrderResponse(1, "test@example.com", "Shipping Address", "Order Address", LocalDate.now(), 100.0, "Shipped", null);
 
         when(orderCommandService.updateOrder(anyInt(), any())).thenReturn(response);
 
-        mockMvc.perform(put("/order/updateOrder/1")
+        mockMvc.perform(put("/api/v1/order/updateOrder/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
@@ -111,32 +111,32 @@ class OrderControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /order/totalOrders - should return total count")
+    @DisplayName("GET /api/v1/order/totalOrders - should return total count")
     void totalOrders() throws Exception {
         when(orderQueryService.totalOrders()).thenReturn(10);
 
-        mockMvc.perform(get("/order/totalOrders"))
+        mockMvc.perform(get("/api/v1/order/totalOrders"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("10"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /order/getAllOrders - should return all orders")
+    @DisplayName("GET /api/v1/order/all - should return all orders")
     void getAllOrders() throws Exception {
         when(orderQueryService.getAllOrders()).thenReturn(new OrderResponseList(List.of()));
 
-        mockMvc.perform(get("/order/getAllOrders"))
+        mockMvc.perform(get("/api/v1/order/all"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /order/totalRevenue - should return total revenue")
+    @DisplayName("GET /api/v1/order/totalRevenue - should return total revenue")
     void totalRevenue() throws Exception {
         when(orderQueryService.totalRevenue()).thenReturn(5000.0);
 
-        mockMvc.perform(get("/order/totalRevenue"))
+        mockMvc.perform(get("/api/v1/order/totalRevenue"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("5000.0"));
     }
@@ -145,11 +145,11 @@ class OrderControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /order/monthly - should return monthly revenue")
+    @DisplayName("GET /api/v1/order/monthly - should return monthly revenue")
     void getMonthlyRevenue() throws Exception {
         when(orderQueryService.getMonthlyRevenue()).thenReturn(Map.of("January", 1000.0));
 
-        mockMvc.perform(get("/order/monthly"))
+        mockMvc.perform(get("/api/v1/order/monthly"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.January").value(1000.0));
     }
