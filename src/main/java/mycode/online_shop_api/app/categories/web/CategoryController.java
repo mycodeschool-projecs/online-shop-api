@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import mycode.online_shop_api.app.categories.dtos.*;
 import mycode.online_shop_api.app.categories.service.CategoryCommandService;
 import mycode.online_shop_api.app.categories.service.CategoryQueryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Categories")
 public class CategoryController {
 
     private final CategoryCommandService categoryCommandService;
