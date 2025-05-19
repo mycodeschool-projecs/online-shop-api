@@ -8,6 +8,7 @@ import mycode.online_shop_api.app.users.dtos.*;
 import mycode.online_shop_api.app.users.model.User;
 import mycode.online_shop_api.app.users.service.UserCommandService;
 import mycode.online_shop_api.app.users.service.UserQueryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,7 @@ import static mycode.online_shop_api.app.system.constants.Constants.JWT_TOKEN_HE
 @CrossOrigin
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Users")
 public class UserController {
 
     private final UserCommandService userCommandService;
