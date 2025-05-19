@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','CLIENT')")
-    @GetMapping("/{userId}")
+    @GetMapping("find/{userId}")
     public ResponseEntity<UserResponse> getUser(@PathVariable long userId) {
         return ResponseEntity.ok(userQueryService.findUserById(userId));
     }
@@ -73,21 +73,21 @@ public class UserController {
     /* ------------------------------------------------------------------ */
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<UserResponse> addUser(@Valid @RequestBody CreateUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userCommandService.createUser(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("delete/{userId}")
     public ResponseEntity<UserResponse> deleteUser(@PathVariable long userId) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(userCommandService.deleteUser(userId));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','CLIENT')")
-    @PutMapping("/{userId}")
+    @PutMapping("edit/{userId}")
     public ResponseEntity<UserResponse> updateUser(@PathVariable long userId,
                                                    @Valid @RequestBody UpdateUserRequest request) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)

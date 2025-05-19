@@ -35,14 +35,14 @@ public class ProductController {
     /* ------------------------------------------------------------------ */
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<ProductResponse> addProduct(@Valid @RequestBody CreateProductRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(productCommandService.addProduct(request));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{productId}")
+    @PutMapping("edit/{productId}")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable int productId,
                                                          @Valid @RequestBody UpdateProductRequest request) {
         productCommandService.updateProductPut(productId, request);
@@ -51,7 +51,7 @@ public class ProductController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{productId}")
+    @DeleteMapping("delete/{productId}")
     public ResponseEntity<ProductResponse> deleteProduct(@PathVariable int productId) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(productCommandService.deleteProduct(productId));
