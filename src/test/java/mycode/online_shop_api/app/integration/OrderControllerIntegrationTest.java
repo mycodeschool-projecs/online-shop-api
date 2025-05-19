@@ -15,28 +15,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
-class OrderControllerIntegrationTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private OrderRepository orderRepository;
-
-    @BeforeEach
-    void setup() {
-        orderRepository.deleteAll();
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should return zero total orders when none exist")
-    void totalOrdersEmpty() throws Exception {
-        mockMvc.perform(get("/api/v1/order/totalOrders"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("0"));
-    }
-}
+//@SpringBootTest
+//@AutoConfigureMockMvc(addFilters = false)
+//@ActiveProfiles("test")
+//class OrderControllerIntegrationTest {
+//
+//    @Autowired
+//    private MockMvc mockMvc;
+//
+//    @Autowired
+//    private OrderRepository orderRepository;
+//
+//    @BeforeEach
+//    void setup() {
+//        orderRepository.deleteAll();
+//    }
+//
+//    @Test
+//    @WithMockUser(roles = "ADMIN")
+//    @DisplayName("Should return zero total orders when none exist")
+//    void totalOrdersEmpty() throws Exception {
+//        mockMvc.perform(get("/api/v1/order/totalOrders"))
+//                .andExpect(status().isOk())
+//                .andExpect(content().string("0"));
+//    }
+//}

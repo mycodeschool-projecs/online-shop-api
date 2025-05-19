@@ -110,13 +110,14 @@ public class UserControllerTest {
     @WithMockUser(roles = "ADMIN")
     void addUser() throws Exception{
         CreateUserRequest createUserRequest = CreateUserRequest.builder()
-                .email("email")
+                .email("email@email.com")
                 .fullName("name")
                 .password("testPassword123")
-                .country("")
-                .shippingAddress("")
-                .billingAddress("")
-                .phone("")
+                .country("email@email.com")
+                .shippingAddress("email@email.com")
+                .billingAddress("email@email.com")
+                .phone("email@email.com")
+                .userRole("ADMIN")
                 .build();
 
         User user = UserMockData.createUser("email", "name");
@@ -312,6 +313,7 @@ public class UserControllerTest {
                 .shippingAddress("Shipping Address")
                 .billingAddress("Billing Address")
                 .phone("987654321")
+                .userRole("ADMIN")
                 .build();
 
         User user = UserMockData.createUser("newuser@test.com", "New User");
