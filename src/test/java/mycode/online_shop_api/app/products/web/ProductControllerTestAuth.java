@@ -81,11 +81,11 @@ class ProductControllerTestAuth {
 //    }
 
     @Test
-    @DisplayName("POST /product/addProduct - CLIENT -> 403 Forbidden")
+    @DisplayName("POST /api/v1/products/add - CLIENT -> 403 Forbidden")
     void addProduct_client_forbidden() throws Exception {
         CreateProductRequest request = new CreateProductRequest("Laptop", "Gaming", "Gaming Laptop", 2000, 3, 3.0);
 
-        mockMvc.perform(post("/product/addProduct")
+        mockMvc.perform(post("/api/v1/products/add")
                         .header("Authorization", "Bearer " + SecurityMockFactory.CLIENT_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -93,11 +93,11 @@ class ProductControllerTestAuth {
     }
 
     @Test
-    @DisplayName("POST /product/addProduct - Invalid Token -> 403 Forbidden")
+    @DisplayName("POST /api/v1/products/add - Invalid Token -> 403 Forbidden")
     void addProduct_invalidToken_forbidden() throws Exception {
         CreateProductRequest request = new CreateProductRequest("Laptop", "Gaming", "Gaming Laptop", 2000, 3, 3.0);
 
-        mockMvc.perform(post("/product/addProduct")
+        mockMvc.perform(post("/api/v1/products/add")
                         .header("Authorization", "Bearer " + SecurityMockFactory.INVALID_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

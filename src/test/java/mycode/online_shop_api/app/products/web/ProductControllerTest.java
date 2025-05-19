@@ -54,7 +54,7 @@ class ProductControllerTest {
 
     @Test
     @WithMockUser(roles = "CLIENT")
-    @DisplayName("POST /product/addProduct - should return 201 CREATED")
+    @DisplayName("POST /api/v1/products/add - should return 201 CREATED")
     void addProduct() throws Exception {
         CreateProductRequest request = new CreateProductRequest("Laptop", "Gaming Beast", "Gaming Laptop", 2000, 3, 3.0);
         Product product = ProductMockData.createGamingLaptop();
@@ -64,7 +64,7 @@ class ProductControllerTest {
 
         when(productCommandService.addProduct(any())).thenReturn(response);
 
-        mockMvc.perform(post("/product/addProduct")
+        mockMvc.perform(post("/api/v1/products/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -74,7 +74,7 @@ class ProductControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("DELETE /product/{id} - should return 202 ACCEPTED")
+    @DisplayName("DELETE /api/v1/products/delete/{id} - should return 202 ACCEPTED")
     void deleteProduct() throws Exception {
         Product product = ProductMockData.createCheapLaptop();
         product.setId(1);
@@ -83,14 +83,14 @@ class ProductControllerTest {
 
         when(productCommandService.deleteProduct(1)).thenReturn(response);
 
-        mockMvc.perform(delete("/product/1"))
+        mockMvc.perform(delete("/api/v1/products/delete/1"))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.name").value("Cheap Laptop"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("PUT /product/{id} - should update and return the updated product")
+    @DisplayName("PUT /api/v1/products/edit/{id} - should update and return the updated product")
     void updateProductPut() throws Exception {
         UpdateProductRequest updateRequest = new UpdateProductRequest("UpdatedCat", "UpdatedDesc", "Updated", 888, 15, 1.5);
         Product product = ProductMockData.createCheapLaptop();
@@ -101,7 +101,7 @@ class ProductControllerTest {
         doNothing().when(productCommandService).updateProductPut(eq(1), any());
         when(productQueryService.findById(1)).thenReturn(response);
 
-        mockMvc.perform(put("/product/1")
+        mockMvc.perform(put("/api/v1/products/edit/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isAccepted())
@@ -110,18 +110,18 @@ class ProductControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /product/totalProducts - should return total count")
+    @DisplayName("GET /api/v1/products/total - should return total count")
     void totalProducts() throws Exception {
         when(productQueryService.totalProducts()).thenReturn(7);
 
-        mockMvc.perform(get("/product/totalProducts"))
+        mockMvc.perform(get("/api/v1/products/total"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("7"));
     }
 
     @Test
     @WithMockUser(roles = "CLIENT")
-    @DisplayName("GET /product/getAllProducts - should return list of products")
+    @DisplayName("GET /api/v1/products/all - should return list of products")
     void getAllProducts() throws Exception {
         List<Product> products = ProductMockData.createSampleProducts();
         ProductResponseList responseList = new ProductResponseList(products.stream()
@@ -131,14 +131,14 @@ class ProductControllerTest {
 
         when(productQueryService.getAllProducts()).thenReturn(responseList);
 
-        mockMvc.perform(get("/product/getAllProducts"))
+        mockMvc.perform(get("/api/v1/products/all"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.list.length()").value(3));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /product/mostSold - should return top selling products")
+    @DisplayName("GET /api/v1/products/most-sold - should return top selling products")
     void getMostSoldProducts() throws Exception {
         List<Product> products = ProductMockData.createSampleProducts();
         ProductResponseList responseList = new ProductResponseList(products.stream()
@@ -148,7 +148,7 @@ class ProductControllerTest {
 
         when(productQueryService.getTopSellingProducts()).thenReturn(responseList);
 
-        mockMvc.perform(get("/product/mostSold"))
+        mockMvc.perform(get("/api/v1/products/most-sold"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.list.length()").value(3));
     }

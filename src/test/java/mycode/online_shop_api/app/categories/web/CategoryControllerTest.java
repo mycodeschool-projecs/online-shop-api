@@ -47,14 +47,14 @@ class CategoryControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("POST /category/addCategory - should return 201 CREATED")
+    @DisplayName("POST /api/v1/categories - should return 201 CREATED")
     void addCategory() throws Exception {
         CreateCategoryRequest request = new CreateCategoryRequest("Electronics");
         CategoryResponse response = new CategoryResponse(1, "Electronics", null);
 
         when(categoryCommandService.addCategory(any())).thenReturn(response);
 
-        mockMvc.perform(post("/category/addCategory")
+        mockMvc.perform(post("/api/v1/categories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -63,27 +63,27 @@ class CategoryControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("DELETE /category/deleteCategory/{id} - should return 202 ACCEPTED")
+    @DisplayName("DELETE /api/v1/categories/{id} - should return 202 ACCEPTED")
     void deleteCategory() throws Exception {
         CategoryResponse response = new CategoryResponse(1, "Electronics", null);
 
         when(categoryCommandService.deleteCategory(1)).thenReturn(response);
 
-        mockMvc.perform(delete("/category/deleteCategory/1"))
+        mockMvc.perform(delete("/api/v1/categories/1"))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$.name").value("Electronics"));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("PUT /category/updateCategory/{id} - should return 202 ACCEPTED")
+    @DisplayName("PUT /api/v1/categories/{id} - should return 202 ACCEPTED")
     void updateCategory() throws Exception {
         UpdateCategoryRequest request = new UpdateCategoryRequest("Updated Electronics");
         CategoryResponse response = new CategoryResponse(1, "Updated Electronics", null);
 
         when(categoryCommandService.updateCategory(1, request)).thenReturn(response);
 
-        mockMvc.perform(put("/category/updateCategory/1")
+        mockMvc.perform(put("/api/v1/categories/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isAccepted())
@@ -92,26 +92,26 @@ class CategoryControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("GET /category/getAll - should return 200 OK")
+    @DisplayName("GET /api/v1/categories/all - should return 200 OK")
     void getAllCategories() throws Exception {
         CategoryResponseList responseList = new CategoryResponseList(new ArrayList<>());
 
         when(categoryQueryService.getAllCategories()).thenReturn(responseList);
 
-        mockMvc.perform(get("/category/getAll"))
+        mockMvc.perform(get("/api/v1/categories/all"))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("POST /category/addSubcategory/{parentId} - should return 201 CREATED")
+    @DisplayName("POST /api/v1/categories/{parentId}/subcategories - should return 201 CREATED")
     void addSubcategory() throws Exception {
         CreateCategoryRequest request = new CreateCategoryRequest("Laptops");
         CategoryResponse response = new CategoryResponse(2, "Laptops", CategoryParentResponse.builder().id(1).name("test").build());
 
         when(categoryCommandService.addSubcategory(1, request)).thenReturn(response);
 
-        mockMvc.perform(post("/category/addSubcategory/1")
+        mockMvc.perform(post("/api/v1/categories/1/subcategories")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
