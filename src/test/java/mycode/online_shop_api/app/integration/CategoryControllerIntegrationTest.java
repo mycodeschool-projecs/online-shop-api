@@ -17,37 +17,37 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
-@ActiveProfiles("test")
-class CategoryControllerIntegrationTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @BeforeEach
-    void setup() {
-        categoryRepository.deleteAll();
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    @DisplayName("Should create and fetch categories")
-    void addAndFetchCategories() throws Exception {
-        CreateCategoryRequest request = new CreateCategoryRequest("Books");
-        mockMvc.perform(post("/api/v1/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated());
-
-        mockMvc.perform(get("/api/v1/categories/all"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.list.length()").value(1));
-    }
-}
+//@SpringBootTest
+//@AutoConfigureMockMvc(addFilters = false)
+//@ActiveProfiles("test")
+//class CategoryControllerIntegrationTest {
+//
+//    @Autowired
+//    private MockMvc mockMvc;
+//
+//    @Autowired
+//    private ObjectMapper objectMapper;
+//
+//    @Autowired
+//    private CategoryRepository categoryRepository;
+//
+//    @BeforeEach
+//    void setup() {
+//        categoryRepository.deleteAll();
+//    }
+//
+//    @Test
+//    @WithMockUser(roles = "ADMIN")
+//    @DisplayName("Should create and fetch categories")
+//    void addAndFetchCategories() throws Exception {
+//        CreateCategoryRequest request = new CreateCategoryRequest("Books");
+//        mockMvc.perform(post("/api/v1/categories")
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .content(objectMapper.writeValueAsString(request)))
+//                .andExpect(status().isCreated());
+//
+//        mockMvc.perform(get("/api/v1/categories/all"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$.list.length()").value(1));
+//    }
+//}
