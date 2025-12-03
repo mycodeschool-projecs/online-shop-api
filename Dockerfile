@@ -1,6 +1,5 @@
-#Use the official OpenJDK base image
-FROM openjdk:19-jdk-slim
-#Use the official OpenJDK base image
+#Use a maintained Temurin JDK base image (matches project Java 17 requirement)
+FROM eclipse-temurin:17-jdk-jammy
 
 #Metadata as described above
 LABEL maintainer = "olibadescu@gmail.com"
