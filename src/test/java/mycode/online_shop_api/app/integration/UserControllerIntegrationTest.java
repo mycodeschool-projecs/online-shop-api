@@ -60,4 +60,31 @@ class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.list.length()").value(1));
     }
+
+    @Test
+    @DisplayName("Should return conflict when registering duplicate email")
+    void registerDuplicateEmailReturnsConflict() throws Exception {
+        CreateUserRequest request = CreateUserRequest.builder()
+                .fullName("Dup User")
+                .email("dup@example.com")
+                .password("password")
+                .phone("111222333")
+                .country("Country")
+                .billingAddress("Billing")
+                .shippingAddress("Shipping")
+                .userRole("CLIENT")
+                .build();
+
+        mockMvc.perform(post("/api/v1/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/v1/users/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.message").value("User with this email already exists"));
+    }
 }

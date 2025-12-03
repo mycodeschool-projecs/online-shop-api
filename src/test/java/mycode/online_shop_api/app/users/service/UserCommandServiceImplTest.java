@@ -60,7 +60,7 @@ class UserCommandServiceImplTest {
         );
 
         when(passwordEncoder.encode("password123")).thenReturn(encodedPassword);
-        when(userRepository.findAll()).thenReturn(new ArrayList<>());
+        when(userRepository.existsByEmail("john@example.com")).thenReturn(false);
 
         User savedUser = User.builder()
                 .id(1L)
@@ -99,13 +99,7 @@ class UserCommandServiceImplTest {
                 "ADMIN"
         );
 
-        List<User> existingUsers = new ArrayList<>();
-        User existingUser = User.builder()
-                .email("existing@example.com")
-                .build();
-        existingUsers.add(existingUser);
-
-        when(userRepository.findAll()).thenReturn(existingUsers);
+        when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
 
         assertThrows(UserAlreadyExists.class, () -> userCommandService.createUser(request));
 
@@ -162,7 +156,7 @@ class UserCommandServiceImplTest {
         );
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
-        when(userRepository.findAll()).thenReturn(new ArrayList<>());
+        when(userRepository.existsByEmailAndIdNot("new@example.com", 1L)).thenReturn(false);
 
         UserResponse response = userCommandService.updateUser(updateRequest, 1L);
 
@@ -194,9 +188,6 @@ class UserCommandServiceImplTest {
                 .email("user2@example.com")
                 .build();
 
-        List<User> userList = new ArrayList<>();
-        userList.add(user2);
-
         UpdateUserRequest updateRequest = new UpdateUserRequest(
                 "Updated Name",
                 "user2@example.com",
@@ -207,7 +198,7 @@ class UserCommandServiceImplTest {
         );
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
-        when(userRepository.findAll()).thenReturn(userList);
+        when(userRepository.existsByEmailAndIdNot("user2@example.com", 1L)).thenReturn(true);
 
         assertThrows(UserAlreadyExists.class, () -> userCommandService.updateUser(updateRequest, 1L));
 

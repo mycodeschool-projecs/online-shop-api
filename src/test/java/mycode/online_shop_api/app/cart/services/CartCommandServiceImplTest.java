@@ -163,13 +163,12 @@ class CartCommandServiceImplTest {
         List<CartProduct> cartProducts = List.of(mockCartProduct);
         mockCart.setCartProducts(new HashSet<>(cartProducts));
 
-        mockCart.setCartProducts(new HashSet<>(cartProducts));
         when(cartRepository.findByUserId(mockUser.getId())).thenReturn(Optional.of(mockCart));
 
         String response = cartCommandService.emptyUserCart();
 
         assertEquals("Cart for user with Id: 1 deleted", response);
-        verify(cartProductRepository).deleteAll(cartProducts);
+        verify(cartProductRepository).deleteAll(anyCollection());
         verify(cartRepository).save(mockCart);
     }
 

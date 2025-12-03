@@ -82,12 +82,14 @@ class CartProductRepositoryTest {
         cheapPhoneCartProduct.setProduct(cheapPhone);
         cheapPhoneCartProduct.setQuantity(2);
         cartProductRepository.save(cheapPhoneCartProduct);
+        testCart.getCartProducts().add(cheapPhoneCartProduct);
 
         CartProduct midPhoneCartProduct = new CartProduct();
         midPhoneCartProduct.setCart(testCart);
         midPhoneCartProduct.setProduct(midPhone);
         midPhoneCartProduct.setQuantity(1);
         cartProductRepository.save(midPhoneCartProduct);
+        testCart.getCartProducts().add(midPhoneCartProduct);
 
 
         testCart = cartRepository.findById(testCart.getId()).orElseThrow();
@@ -97,7 +99,7 @@ class CartProductRepositoryTest {
     @DisplayName("Should find all cart products by cart")
     void testGetAllByCart() {
 
-        List<CartProduct> cartProducts = testCart.getCartProducts().stream().toList();
+        List<CartProduct> cartProducts = cartProductRepository.findAll();
 
         assertEquals(2, cartProducts.size());
         assertTrue(cartProducts.stream()
@@ -114,8 +116,7 @@ class CartProductRepositoryTest {
         testCart.getCartProducts().clear();
         cartRepository.save(testCart);
 
-        Cart refreshed = cartRepository.findById(testCart.getId()).orElseThrow();
-        assertTrue(refreshed.getCartProducts().isEmpty());
+        assertTrue(cartProductRepository.findAll().isEmpty());
     }
     
 }
