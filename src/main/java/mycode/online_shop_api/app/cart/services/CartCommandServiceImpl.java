@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @AllArgsConstructor
 @Service
@@ -52,7 +53,7 @@ public class CartCommandServiceImpl implements CartCommandService{
 
         cart = cartTemp.orElseGet(() -> Cart.builder()
                 .user(userRepository.findById(user.getId()).orElseThrow(() -> new NoUserFound("No user with this id found")))
-                .cartProducts(null).build());
+                .build());
 
 
         Product product = productRepository.findById(cartRequest.productId())
@@ -85,26 +86,18 @@ public class CartCommandServiceImpl implements CartCommandService{
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new NoProductFound("No product with this id found"));
 
-        List<CartProduct> list = cartProductRepository.getAllByCart(cart)
-                .orElseThrow(() -> new NoCartFound("No products found in this cart"));
-
-        boolean productFound = false;
-
-
-        System.out.println(list.size());
-        for (CartProduct cartProduct : list) {
-            System.out.println(cartProduct);
-            if (product.getId() == cartProduct.getProduct().getId()) {
-                cart.removeProduct(product);
-                cartRepository.save(cart);
-                productFound = true;
-                break;
-            }
+        Set<CartProduct> cartProducts = cart.getCartProducts();
+        if (cartProducts.isEmpty()) {
+            throw new NoCartFound("No products found in this cart");
         }
 
-        if (!productFound) {
-            throw new NoProductFound("No product with this id in the cart");
-        }
+        CartProduct cartProduct = cartProducts.stream()
+                .filter(cp -> cp.getProduct().getId() == product.getId())
+                .findFirst()
+                .orElseThrow(() -> new NoProductFound("No product with this id in the cart"));
+
+        cartProducts.remove(cartProduct);
+        cartRepository.save(cart);
 
         return CartMapper.cartToResponseDto(cart);
     }
@@ -120,24 +113,18 @@ public class CartCommandServiceImpl implements CartCommandService{
                 .orElseThrow(() -> new NoProductFound("No product with this id found"));
 
 
-        List<CartProduct> cartProducts = cartProductRepository.getAllByCart(cart)
-                .orElseThrow(() -> new NoCartFound("No products found in this cart"));
-
-        boolean productFound = false;
-
-
-        for (CartProduct cartProduct : cartProducts) {
-            if (cartProduct.getProduct().getId() == productId) {
-                cartProduct.setQuantity(updateCartQuantityRequest.quantity());
-                cartProductRepository.save(cartProduct);
-                productFound = true;
-                break;
-            }
+        Set<CartProduct> cartProducts = cart.getCartProducts();
+        if (cartProducts.isEmpty()) {
+            throw new NoCartFound("No products found in this cart");
         }
 
-        if (!productFound) {
-            throw new NoProductFound("No product with this id in the cart");
-        }
+        CartProduct cartProduct = cartProducts.stream()
+                .filter(cp -> cp.getProduct().getId() == productId)
+                .findFirst()
+                .orElseThrow(() -> new NoProductFound("No product with this id in the cart"));
+
+        cartProduct.setQuantity(updateCartQuantityRequest.quantity());
+        cartProductRepository.save(cartProduct);
         cartRepository.save(cart);
 
         return CartMapper.cartToResponseDto(cart);
@@ -150,13 +137,13 @@ public class CartCommandServiceImpl implements CartCommandService{
         Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new NoCartFound("No cart found for this user"));
 
-        List<CartProduct> cartProducts = cartProductRepository.getAllByCart(cart)
-                .orElseThrow(() -> new NoCartFound("No products found in this cart"));
+        Set<CartProduct> cartProducts = cart.getCartProducts();
+        if (cartProducts.isEmpty()) {
+            throw new NoCartFound("No products found in this cart");
+        }
 
         cartProductRepository.deleteAll(cartProducts);
-
-        cart.getCartProducts().clear();
-
+        cartProducts.clear();
         cartRepository.save(cart);
 
         return "Cart for user with Id: " + user.getId() + " deleted";

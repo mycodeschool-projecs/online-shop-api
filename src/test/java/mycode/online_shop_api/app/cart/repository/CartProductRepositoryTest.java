@@ -18,9 +18,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -92,7 +90,7 @@ class CartProductRepositoryTest {
         cartProductRepository.save(midPhoneCartProduct);
 
 
-        testCart = cartRepository.findById(Math.toIntExact(testCart.getId())).orElseThrow();
+        testCart = cartRepository.findById(testCart.getId()).orElseThrow();
     }
 
     @Test
@@ -101,15 +99,10 @@ class CartProductRepositoryTest {
 
         List<CartProduct> cartProducts = testCart.getCartProducts().stream().toList();
 
-
-        Optional<List<CartProduct>> result = cartProductRepository.getAllByCart(testCart);
-
-
-        assertTrue(result.isPresent());
-        assertEquals(2, result.get().size());
-        assertTrue(result.get().stream()
+        assertEquals(2, cartProducts.size());
+        assertTrue(cartProducts.stream()
                 .anyMatch(cp -> cp.getProduct().getName().equals("Cheap Phone") && cp.getQuantity() == 2));
-        assertTrue(result.get().stream()
+        assertTrue(cartProducts.stream()
                 .anyMatch(cp -> cp.getProduct().getName().equals("Mid Phone") && cp.getQuantity() == 1));
     }
 
@@ -121,10 +114,8 @@ class CartProductRepositoryTest {
         testCart.getCartProducts().clear();
         cartRepository.save(testCart);
 
-        Optional<List<CartProduct>> result = cartProductRepository.getAllByCart(testCart);
-
-        assertTrue(result.isPresent());
-        assertTrue(result.get().isEmpty());
+        Cart refreshed = cartRepository.findById(testCart.getId()).orElseThrow();
+        assertTrue(refreshed.getCartProducts().isEmpty());
     }
     
 }

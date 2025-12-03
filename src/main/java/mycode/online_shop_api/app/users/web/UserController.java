@@ -1,14 +1,21 @@
 package mycode.online_shop_api.app.users.web;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import mycode.online_shop_api.app.global_exceptions.ApiError;
 import mycode.online_shop_api.app.system.jwt.JWTTokenProvider;
 import mycode.online_shop_api.app.users.dtos.*;
 import mycode.online_shop_api.app.users.model.User;
 import mycode.online_shop_api.app.users.service.UserCommandService;
 import mycode.online_shop_api.app.users.service.UserQueryService;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,24 +55,35 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/total")
+    @Operation(summary = "Total users", description = "Returns the aggregate number of registered users. Requires role: ADMIN.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Integer> totalUsers() {
         return ResponseEntity.ok(userQueryService.totalUsers());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/most-active")
+    @Operation(summary = "Most active users",
+            description = "Users ranked by number of orders placed. Requires role: ADMIN.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserResponseList> mostActiveUsers() {
         return ResponseEntity.ok(userQueryService.getMostActiveUsers());
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','CLIENT')")
     @GetMapping("find/{userId}")
+    @Operation(summary = "Fetch user",
+            description = "Returns a single user profile by identifier. Requires roles: ADMIN or CLIENT.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserResponse> getUser(@PathVariable long userId) {
         return ResponseEntity.ok(userQueryService.findUserById(userId));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
+    @Operation(summary = "All users",
+            description = "Pageless listing of every registered user. Requires role: ADMIN.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserResponseList> getAllUsers() {
         return ResponseEntity.ok(userQueryService.getAllUsers());
     }
@@ -76,6 +94,9 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
+    @Operation(summary = "Create user",
+            description = "Registers a new account and provisions a cart. Requires role: ADMIN.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserResponse> addUser(@Valid @RequestBody CreateUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userCommandService.createUser(request));
@@ -83,6 +104,9 @@ public class UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("delete/{userId}")
+    @Operation(summary = "Delete user",
+            description = "Removes the specified user and associated cart. Requires role: ADMIN.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserResponse> deleteUser(@PathVariable long userId) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(userCommandService.deleteUser(userId));
@@ -90,6 +114,9 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('ADMIN','CLIENT')")
     @PutMapping("edit/{userId}")
+    @Operation(summary = "Update user",
+            description = "Updates profile fields for the target user. Requires roles: ADMIN or CLIENT.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<UserResponse> updateUser(@PathVariable long userId,
                                                    @Valid @RequestBody UpdateUserRequest request) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
@@ -101,6 +128,13 @@ public class UserController {
     /* ------------------------------------------------------------------ */
 
     @PostMapping("/login")
+    @Operation(summary = "Login",
+            description = "Authenticates user credentials and returns a JWT token in the headers.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Authenticated"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
+    })
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest credentials) {
         authenticate(credentials.email(), credentials.password());
 
@@ -119,6 +153,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Register",
+            description = "Self-service registration that returns a JWT token for immediate use.")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody CreateUserRequest request) {
         userCommandService.createUser(request);
         User newUser = userQueryService.findByEmail(request.email());
@@ -136,6 +172,9 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('ADMIN','CLIENT')")
     @GetMapping("/role")
+    @Operation(summary = "Resolve user role",
+            description = "Derives a user's role from the supplied bearer token. Requires roles: ADMIN or CLIENT.",
+            security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<String> getUserRole(@RequestHeader("Authorization") String token) {
         try {
             String tokenValue = extractToken(token);

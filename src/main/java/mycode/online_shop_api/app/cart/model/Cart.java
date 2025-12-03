@@ -43,6 +43,7 @@ public class Cart {
     @JsonBackReference
     private User user;
 
+    @Builder.Default
     @ToString.Exclude
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<CartProduct> cartProducts = new HashSet<>();

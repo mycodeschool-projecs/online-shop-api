@@ -16,8 +16,6 @@ import mycode.online_shop_api.app.users.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @AllArgsConstructor
 @Service
 public class UserCommandServiceImpl implements UserCommandService{
@@ -39,6 +37,10 @@ public class UserCommandServiceImpl implements UserCommandService{
             throw new IllegalArgumentException("Invalid user role: " + roleString);
         }
 
+        if (userRepository.existsByEmail(createUserRequest.email())) {
+            throw new UserAlreadyExists("User with this email already exists");
+        }
+
         User user  = User.builder()
                 .phone(createUserRequest.phone())
                 .password(passwordEncoder.encode(createUserRequest.password()))
@@ -49,14 +51,6 @@ public class UserCommandServiceImpl implements UserCommandService{
                 .shippingAddress(createUserRequest.shippingAddress())
                 .country(createUserRequest.country())
                 .build();
-
-        List<User> list = userRepository.findAll();
-
-        list.forEach( user1 -> {
-            if(user.getEmail().equals(user1.getEmail())){
-                throw new UserAlreadyExists("User with this email already exists");
-            }
-        });
 
         userRepository.saveAndFlush(user);
         Cart cart = Cart.builder().user(user).build();
@@ -84,14 +78,9 @@ public class UserCommandServiceImpl implements UserCommandService{
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NoUserFound("No user with this id found"));
 
-        List<User> list = userRepository.findAll();
-        list.remove(user);
-
-        list.forEach( user1 -> {
-            if(up.email().equals(user1.getEmail())){
-                throw new UserAlreadyExists("User with this email already exists, please enter a different email address");
-            }
-        });
+        if (userRepository.existsByEmailAndIdNot(up.email(), user.getId())) {
+            throw new UserAlreadyExists("User with this email already exists, please enter a different email address");
+        }
         user.setEmail(up.email());
         user.setFullName(up.fullName());
         user.setPhone(up.phone());

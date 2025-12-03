@@ -127,7 +127,7 @@ class CartCommandServiceImplTest {
     void shouldDeleteProductFromCartSuccessfully() {
         when(cartRepository.findByUserId(mockUser.getId())).thenReturn(Optional.of(mockCart));
         when(productRepository.findById(1)).thenReturn(Optional.of(mockProduct));
-        when(cartProductRepository.getAllByCart(mockCart)).thenReturn(Optional.of(List.of(mockCartProduct)));
+        mockCart.setCartProducts(new HashSet<>(List.of(mockCartProduct)));
 
         var response = cartCommandService.deleteProductFromCart(1);
 
@@ -139,7 +139,21 @@ class CartCommandServiceImplTest {
     void shouldThrowWhenProductIsNotInCart() {
         when(cartRepository.findByUserId(mockUser.getId())).thenReturn(Optional.of(mockCart));
         when(productRepository.findById(1)).thenReturn(Optional.of(mockProduct));
-        when(cartProductRepository.getAllByCart(mockCart)).thenReturn(Optional.of(List.of()));
+        mockCart.setCartProducts(new HashSet<>());
+
+        assertThrows(NoCartFound.class, () -> cartCommandService.deleteProductFromCart(1));
+    }
+
+    @Test
+    void shouldThrowWhenDifferentProductInCart() {
+        when(cartRepository.findByUserId(mockUser.getId())).thenReturn(Optional.of(mockCart));
+        when(productRepository.findById(1)).thenReturn(Optional.of(mockProduct));
+
+        Product other = new Product();
+        other.setId(2);
+        CartProduct otherCartProduct = new CartProduct();
+        otherCartProduct.setProduct(other);
+        mockCart.setCartProducts(new HashSet<>(List.of(otherCartProduct)));
 
         assertThrows(NoProductFound.class, () -> cartCommandService.deleteProductFromCart(1));
     }
@@ -149,8 +163,8 @@ class CartCommandServiceImplTest {
         List<CartProduct> cartProducts = List.of(mockCartProduct);
         mockCart.setCartProducts(new HashSet<>(cartProducts));
 
+        mockCart.setCartProducts(new HashSet<>(cartProducts));
         when(cartRepository.findByUserId(mockUser.getId())).thenReturn(Optional.of(mockCart));
-        when(cartProductRepository.getAllByCart(mockCart)).thenReturn(Optional.of(cartProducts));
 
         String response = cartCommandService.emptyUserCart();
 
@@ -168,8 +182,8 @@ class CartCommandServiceImplTest {
 
     @Test
     void shouldThrowWhenNoProductsFoundInCart() {
+        mockCart.setCartProducts(new HashSet<>());
         when(cartRepository.findByUserId(mockUser.getId())).thenReturn(Optional.of(mockCart));
-        when(cartProductRepository.getAllByCart(mockCart)).thenReturn(Optional.empty());
 
         assertThrows(NoCartFound.class, () -> cartCommandService.emptyUserCart());
     }
@@ -178,9 +192,9 @@ class CartCommandServiceImplTest {
     void shouldUpdateCartQuantitySuccessfully() {
         UpdateCartQuantityRequest request = new UpdateCartQuantityRequest(5);
 
+        mockCart.setCartProducts(new HashSet<>(List.of(mockCartProduct)));
         when(cartRepository.findByUserId(mockUser.getId())).thenReturn(Optional.of(mockCart));
         when(productRepository.findById(1)).thenReturn(Optional.of(mockProduct));
-        when(cartProductRepository.getAllByCart(mockCart)).thenReturn(Optional.of(List.of(mockCartProduct)));
 
         var response = cartCommandService.updateCartQuantity(request, 1);
 
@@ -191,10 +205,15 @@ class CartCommandServiceImplTest {
     @Test
     void shouldThrowWhenUpdatingNonexistentProductInCart() {
         UpdateCartQuantityRequest request = new UpdateCartQuantityRequest(5);
+        CartProduct otherCartProduct = new CartProduct();
+        Product other = new Product();
+        other.setId(2);
+        otherCartProduct.setProduct(other);
+        mockCart.setCartProducts(new HashSet<>(List.of(otherCartProduct)));
+
         when(cartRepository.findByUserId(mockUser.getId())).thenReturn(Optional.of(mockCart));
         when(productRepository.findById(1)).thenReturn(Optional.of(mockProduct));
-        when(cartProductRepository.getAllByCart(mockCart)).thenReturn(Optional.empty());
 
-        assertThrows(NoCartFound.class, () -> cartCommandService.updateCartQuantity(request, 1));
+        assertThrows(NoProductFound.class, () -> cartCommandService.updateCartQuantity(request, 1));
     }
 }

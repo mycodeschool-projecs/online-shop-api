@@ -28,7 +28,7 @@ import static mycode.online_shop_api.app.system.constants.Constants.*;
 @Component
 public class JWTTokenProvider {
 
-    @Value("application.jwt.secretKey")
+    @Value("${spring.jwt.secretKey}")
     private String secret;
 
     public String generateJWTToken(UserDetails user) {
