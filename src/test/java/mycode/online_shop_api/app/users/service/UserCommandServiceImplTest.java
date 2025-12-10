@@ -10,12 +10,16 @@ import mycode.online_shop_api.app.users.exceptions.NoUserFound;
 import mycode.online_shop_api.app.users.exceptions.UserAlreadyExists;
 import mycode.online_shop_api.app.users.model.User;
 import mycode.online_shop_api.app.users.repository.UserRepository;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.ArrayList;
@@ -45,8 +49,14 @@ class UserCommandServiceImplTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     void shouldCreateUserSuccessfully() {
+        authenticateAsAdmin();
         String encodedPassword = "encodedPassword";
         CreateUserRequest request = new CreateUserRequest(
                 "John Doe",
@@ -88,6 +98,7 @@ class UserCommandServiceImplTest {
 
     @Test
     void shouldThrowExceptionWhenUserAlreadyExists() {
+        authenticateAsAdmin();
         CreateUserRequest request = new CreateUserRequest(
                 "John Doe",
                 "existing@example.com",
@@ -221,5 +232,14 @@ class UserCommandServiceImplTest {
         assertThrows(NoUserFound.class, () -> userCommandService.updateUser(updateRequest, 99L));
 
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    private void authenticateAsAdmin() {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                "admin@example.com",
+                "password",
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }
