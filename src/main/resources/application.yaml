@@ -19,3 +19,6 @@ server:
   error:
     include-binding-errors: always
     include-message: always
+app:
+  cors:
+    allowed-origins: http://127.0.0.1:*,http://localhost:*,http://host.docker.internal:*,http://localhost:3000,http://127.0.0.1:3000

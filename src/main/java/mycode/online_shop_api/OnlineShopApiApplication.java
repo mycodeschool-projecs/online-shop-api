@@ -1,6 +1,7 @@
 package mycode.online_shop_api;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,6 +12,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class OnlineShopApiApplication {
@@ -26,16 +29,12 @@ public class OnlineShopApiApplication {
         };
     }
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins:http://127.0.0.1:*,http://localhost:*}") String allowedOrigins) {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
 
-        corsConfiguration.setAllowedOriginPatterns(Arrays.asList(
-                "http://127.0.0.1:*",
-                "http://localhost:*",
-                "https://127.0.0.1:*",
-                "https://localhost:*"
-        ));
+        corsConfiguration.setAllowedOriginPatterns(resolveAllowedOrigins(allowedOrigins));
 
         corsConfiguration.setAllowedHeaders(Arrays.asList(
                 "Origin",
@@ -72,6 +71,17 @@ public class OnlineShopApiApplication {
     @Bean
     BCryptPasswordEncoder bCryptPasswordEncoder(){
         return  new BCryptPasswordEncoder();
+    }
+
+    private List<String> resolveAllowedOrigins(String allowedOrigins) {
+        List<String> patterns = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+        if (patterns.isEmpty()) {
+            patterns.add("*");
+        }
+        return patterns;
     }
 
 }

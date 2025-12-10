@@ -13,8 +13,15 @@ import mycode.online_shop_api.app.users.exceptions.UserAlreadyExists;
 import mycode.online_shop_api.app.users.mapper.UserMapper;
 import mycode.online_shop_api.app.users.model.User;
 import mycode.online_shop_api.app.users.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import java.util.Collection;
 
 @AllArgsConstructor
 @Service
@@ -28,14 +35,7 @@ public class UserCommandServiceImpl implements UserCommandService{
     @Override
     public UserResponse createUser(CreateUserRequest createUserRequest) {
 
-        String roleString = createUserRequest.userRole().toUpperCase();
-        UserRole role;
-
-        try {
-            role = UserRole.valueOf(roleString);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid user role: " + roleString);
-        }
+        UserRole role = resolveRequestedRole(createUserRequest);
 
         if (userRepository.existsByEmail(createUserRequest.email())) {
             throw new UserAlreadyExists("User with this email already exists");
@@ -91,5 +91,41 @@ public class UserCommandServiceImpl implements UserCommandService{
         userRepository.save(user);
 
         return UserMapper.userToResponseDto(user);
+}
+
+    private UserRole resolveRequestedRole(CreateUserRequest createUserRequest) {
+        String requestedRole = createUserRequest.userRole();
+
+        if (!StringUtils.hasText(requestedRole)) {
+            return UserRole.CLIENT;
+        }
+
+        UserRole desiredRole;
+        try {
+            desiredRole = UserRole.valueOf(requestedRole.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid user role: " + requestedRole);
+        }
+
+        if (!isCurrentUserAdmin() && desiredRole != UserRole.CLIENT) {
+            throw new AccessDeniedException("Only administrators can create privileged accounts");
+        }
+
+        return desiredRole;
+    }
+
+    private boolean isCurrentUserAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return false;
+        }
+
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        if (authorities == null) {
+            return false;
+        }
+
+        return authorities.stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 }

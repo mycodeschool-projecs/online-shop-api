@@ -56,6 +56,8 @@ public class CategoryCommandServiceImpl implements CategoryCommandService{
 
         category.setName(updateCategoryRequest.name());
 
+        categoryRepository.save(category);
+
         return CategoryResponse.builder().name(category.getName()).id(category.getId()).build();
     }
 

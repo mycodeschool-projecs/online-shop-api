@@ -1,32 +1,31 @@
 package mycode.online_shop_api.app.orders.service;
 
 import lombok.AllArgsConstructor;
-
-
-import mycode.online_shop_api.app.orderDetails.exceptions.NoOrderDetailsFound;
+import mycode.online_shop_api.app.cart.dtos.AddProductToCartRequest;
 import mycode.online_shop_api.app.orderDetails.model.OrderDetails;
 import mycode.online_shop_api.app.orderDetails.repository.OrderDetailsRepository;
 import mycode.online_shop_api.app.orders.dtos.CreateOrderRequest;
 import mycode.online_shop_api.app.orders.dtos.CreateOrderUpdateRequest;
-import mycode.online_shop_api.app.orders.dtos.EditOrderRequest;
 import mycode.online_shop_api.app.orders.dtos.OrderResponse;
 import mycode.online_shop_api.app.orders.exceptions.NoOrderFound;
 import mycode.online_shop_api.app.orders.mappers.OrderMapper;
 import mycode.online_shop_api.app.orders.model.Order;
 import mycode.online_shop_api.app.orders.repository.OrderRepository;
-import mycode.online_shop_api.app.cart.dtos.AddProductToCartRequest;
 import mycode.online_shop_api.app.products.exceptions.NoProductFound;
 import mycode.online_shop_api.app.products.model.Product;
 import mycode.online_shop_api.app.products.repository.ProductRepository;
+import mycode.online_shop_api.app.system.security.UserRole;
 import mycode.online_shop_api.app.users.exceptions.NoUserFound;
 import mycode.online_shop_api.app.users.mapper.UserMapper;
 import mycode.online_shop_api.app.users.model.User;
 import mycode.online_shop_api.app.users.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -146,9 +145,16 @@ public class OrderCommandServiceImpl implements OrderCommandService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NoOrderFound("No order with this ID found"));
 
+        User currentUser = getAuthenticatedUser();
+        boolean isAdmin = currentUser.getUserRole() == UserRole.ADMIN;
+        if (!isAdmin && order.getUser() != null && order.getUser().getId() != currentUser.getId()) {
+            throw new AccessDeniedException("You are not allowed to cancel other users' orders");
+        }
+
         Set<OrderDetails> orderDetailsSet = order.getOrderDetails();
 
-        orderDetailsSet.forEach(orderDetails -> {
+        List<OrderDetails> detailsToRemove = new ArrayList<>(orderDetailsSet);
+        detailsToRemove.forEach(orderDetails -> {
             order.removeOrderDetails(orderDetails);
             orderDetailsRepository.delete(orderDetails);
         });

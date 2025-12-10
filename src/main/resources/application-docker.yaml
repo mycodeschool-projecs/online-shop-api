@@ -6,3 +6,6 @@ spring:
     url: jdbc:mysql://mysql:3306/online_shop_api_db?useUnicode=true&characterEncoding=utf8&useSSL=false&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
     username: root
     password: root
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://host.docker.internal:3000,http://frontend:3000

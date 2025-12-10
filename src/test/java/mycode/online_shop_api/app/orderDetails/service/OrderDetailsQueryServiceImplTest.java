@@ -2,6 +2,7 @@ package mycode.online_shop_api.app.orderDetails.service;
 
 import mycode.online_shop_api.app.orderDetails.repository.OrderDetailsRepository;
 import mycode.online_shop_api.app.products.dto.ProductResponse;
+import mycode.online_shop_api.app.products.exceptions.NoProductFound;
 import mycode.online_shop_api.app.products.model.Product;
 import mycode.online_shop_api.app.products.mocks.ProductMockData;
 import mycode.online_shop_api.app.products.repository.ProductRepository;
@@ -61,9 +62,7 @@ class OrderDetailsQueryServiceImplTest {
     void shouldThrowExceptionWhenNoProductsSold() {
         when(orderDetailsRepository.mostSoldProduct()).thenReturn(List.of());
 
-        assertThrows(IndexOutOfBoundsException.class, () -> {
-            orderDetailsQueryService.mostSoldProduct();
-        });
+        assertThrows(NoProductFound.class, () -> orderDetailsQueryService.mostSoldProduct());
     }
 
     @Test
@@ -72,8 +71,6 @@ class OrderDetailsQueryServiceImplTest {
         when(orderDetailsRepository.mostSoldProduct()).thenReturn(List.of(999));
         when(productRepository.findById(999)).thenReturn(Optional.empty());
 
-        assertThrows(RuntimeException.class, () -> {
-            orderDetailsQueryService.mostSoldProduct();
-        });
+        assertThrows(NoProductFound.class, () -> orderDetailsQueryService.mostSoldProduct());
     }
 }
